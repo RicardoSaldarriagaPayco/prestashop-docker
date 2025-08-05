@@ -1,0 +1,66 @@
+version: '3.2'
+services:
+  db:
+    container_name: db
+    image: mysql:5.7
+    ports: 
+      - "3308:3306"
+    restart: unless-stopped
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_PASSWORD: admin
+      MYSQL_DATABASE: prestashop
+    networks:
+      - prestashop_network
+    volumes:
+      - ./conf:/etc/mysql/conf.d
+      - dbdata:/var/lib/mysql
+  prestashop:
+    container_name: prestashop
+    image: prestashop/prestashop:latest
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - 8082:80
+    environment:
+      DB_SERVER: db
+      DB_NAME: prestashop
+      DB_USER: root
+      DB_PASSWD: admin
+      PS_FOLDER_ADMIN: admin4577
+      PS_FOLDER_INSTALL: install4577
+    networks:
+      - prestashop_network
+    volumes:
+      - type: bind
+        source: ./modules/testModule # local path to the module
+        target: /var/www/html/modules/testModule # path to be mounted in the container
+      - type: bind
+        source: ./themes/myTheme # local path to the theme
+        target:  /var/www/html/themes/myTheme # path to be mounted in the container
+      - psdata:/var/www/html
+  phpmyadmin:
+      image: phpmyadmin/phpmyadmin
+      container_name: phpmyadmin
+      links:
+        - db:db
+      depends_on:
+      - db  
+      environment:
+        PMA_HOST: db
+        PMA_PORT: 3308
+        PMA_ARBITRARY: 1
+        MYSQL_USER: root
+        MYSQL_PASSWORD: admin
+        MYSQL_ROOT_PASSWORD: admin
+      restart: unless-stopped
+      ports:
+        - 8081:80
+networks:
+  prestashop_network:
+  
+volumes:
+  psdata:
+  dbdata:
