@@ -62,5 +62,11 @@ networks:
   prestashop_network:
   
 volumes:
-  psdata:
-  dbdata:
+  - type: bind
+    source: ./modules/testModule
+    target: /var/www/html/modules/testModule
+  - type: bind
+    source: ./themes/myTheme
+    target:  /var/www/html/themes/myTheme
+  - psdata:/var/www/html
+  - ./conf/php-custom.ini:/usr/local/etc/php/conf.d/custom.ini
